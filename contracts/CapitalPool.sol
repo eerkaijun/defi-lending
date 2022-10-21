@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import { ICapitalPool } from "./interfaces/ICapitalPool.sol";
 import { 
     LockupPeriodNotOver,
@@ -13,8 +14,10 @@ import {
 contract CapitalPool is ICapitalPool {
 
     uint256 currentCreditLineID = 1;
+    address underlierAddress;
 
     mapping(uint256 => CreditLine) creditLines;
+    mapping(address => uint256) depositedAmount;
 
     struct CreditLine {
         address borrower;
@@ -66,6 +69,10 @@ contract CapitalPool is ICapitalPool {
         _;
     }
 
+    constructor(address _underlierAddress) {
+        underlierAddress = _underlierAddress;
+    }
+
     function openCreditLine(
         address borrower, 
         uint256 quorum, 
@@ -76,19 +83,26 @@ contract CapitalPool is ICapitalPool {
         currentCreditLineID ++;
     }
 
+    /// @dev user first have to approve the ERC20 token to be spent
     function lendCapital(uint256 creditLineID, uint256 amount) external beforeQuorumPeriod(creditLineID) {
-
+        CreditLine storage pool = creditLines[creditLineID];
+        pool.raisedCapital += amount;
+        depositedAmount[msg.sender] += amount;
+        IERC20Metadata(underlierAddress).transferFrom(msg.sender, address(this), amount);
     }
 
     function removeCapital(uint256 creditLineID) external afterQuorumPeriod(creditLineID) belowQuorum(creditLineID) {
-
+        uint256 amount = depositedAmount[msg.sender];
+        depositedAmount[msg.sender] = 0;
+        IERC20Metadata(underlierAddress).transfer(msg.sender, amount);
     }
 
     function withdrawCapital(uint256 creditLineID) external afterLockupPeriod(creditLineID) {
-
+        // TODO: Use of interest bearing token such as cToken to represents share
+        // TODO: alternatively use of ERC 4626 to represent vault
     }
 
     function triggerLoan(uint256 creditLineID) external aboveQuorum(creditLineID) {
-
+        // TODO: integration with lending protocol such as Aave and Compound
     }
 }
