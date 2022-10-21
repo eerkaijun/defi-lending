@@ -18,8 +18,20 @@ interface ICapitalPool {
     function lendCapital(uint256 creditLineID, uint256 amount) external;
 
     /**
+     * @notice if quorum is not achieved, lender is free to remove its capital
+     * @param creditLineID id of the opened credit line
+     */
+    function removeCapital(uint256 creditLineID) external;
+
+    /**
      * @notice during withdraw, lender withdraws its initial capital plus accrued interest rates
      * @param creditLineID id of the opened credit line
      */
     function withdrawCapital(uint256 creditLineID) external;
+
+    /**
+     * @notice when quorum reached, admin can trigger loans to borrower
+     * @param creditLineID id of the opened credit line
+     */
+    function triggerLoan(uint256 creditLineID) external;
 }
