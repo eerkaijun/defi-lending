@@ -8,8 +8,9 @@ interface ICapitalPool {
      * @param quorum minimum amount of funds for credit line to go forward
      * @param quorumPeriod unix timestamp to reach the required quorum
      * @param lockupPeriod if quorum passes, unix timestamp for which the funds are locked until
+     * @param repayAmount amount to be repaid by borrower to capital pool (inclusive of interest)
      */
-    function openCreditLine(address borrower, uint256 quorum, uint256 quorumPeriod, uint256 lockupPeriod) external;
+    function openCreditLine(address borrower, uint256 quorum, uint256 quorumPeriod, uint256 lockupPeriod, uint256 repayAmount) external;
 
     /**
      * @param creditLineID id of the opened credit line
@@ -32,6 +33,7 @@ interface ICapitalPool {
     /**
      * @notice when quorum reached, admin can trigger loans to borrower
      * @param creditLineID id of the opened credit line
+     * @param amount amount to be borrowed in Aave (in USDC)
      */
-    function triggerLoan(uint256 creditLineID) external;
+    function triggerLoan(uint256 creditLineID, uint256 amount) external;
 }

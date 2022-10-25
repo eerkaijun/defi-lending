@@ -21,14 +21,17 @@ contract CapitalPool is ICapitalPool {
     address underlierAddress;
 
     mapping(uint256 => CreditLine) creditLines;
-    mapping(address => uint256) depositedAmount;
+    mapping(address => uint256) depositedAmount; // deposited amount by lenders in native token
 
     struct CreditLine {
         address borrower;
-        uint256 quorum;
+        uint256 quorum; // quorum for native tokens in order for deal to go through
         uint256 quorumPeriod;
-        uint256 lockupPeriod;
-        uint256 raisedCapital;
+        uint256 lockupPeriod; // loan period
+        uint256 repayAmount; // amount to be repaid by borrower to capital pool (inclusive of interest)
+        uint256 raisedCapital; // amount of native tokens raised
+        uint256 borrowedAmount; // borrowed amount in USDC
+        uint256 repaidAmountToAave; // repaid amount to Aave
     }
 
     modifier afterLockupPeriod(uint256 creditLineID) {
@@ -81,9 +84,10 @@ contract CapitalPool is ICapitalPool {
         address borrower, 
         uint256 quorum, 
         uint256 quorumPeriod, 
-        uint256 lockupPeriod
+        uint256 lockupPeriod,
+        uint256 repayAmount
     ) external {
-        creditLines[currentCreditLineID] = CreditLine(borrower, quorum, quorumPeriod, lockupPeriod, 0);
+        creditLines[currentCreditLineID] = CreditLine(borrower, quorum, quorumPeriod, lockupPeriod, repayAmount, 0, 0, 0);
         currentCreditLineID ++;
     }
 
@@ -102,13 +106,25 @@ contract CapitalPool is ICapitalPool {
     }
 
     function withdrawCapital(uint256 creditLineID) external afterLockupPeriod(creditLineID) {
-        // TODO: Use of interest bearing token such as cToken to represents share
-        // TODO: alternatively use of ERC 4626 to represent vault
+        // TODO: use of ERC 4626 to represent vault
+        CreditLine memory pool = creditLines[creditLineID]; 
+
+        // calculate profit
+        uint256 profit = 0;
+        if (pool.repayAmount > pool.repaidAmountToAave) {
+            profit = pool.repayAmount = pool.repaidAmountToAave;
+        }
+        
+        // profit sharing among lender
+        uint256 userProfit = depositedAmount[msg.sender] * profit / pool.raisedCapital;
+
+        // transfer native tokens + interest accrued back to user
+        IERC20Metadata(underlierAddress).transfer(msg.sender, depositedAmount[msg.sender]);
+        IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48).transfer(msg.sender, userProfit);
     }
 
-    function triggerLoan(uint256 creditLineID) external aboveQuorum(creditLineID) {
-        // TODO: integration with lending protocol such as Aave and Compound
-        CreditLine memory pool = creditLines[creditLineID]; 
+    function triggerLoan(uint256 creditLineID, uint256 borrowAmount) external aboveQuorum(creditLineID) {
+        CreditLine storage pool = creditLines[creditLineID]; 
 
         // get lending pool address (Ethereum mainnet)
         address lendingPoolAddress = LendingPoolAddressesProvider(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5).getLendingPool();
@@ -118,5 +134,26 @@ contract CapitalPool is ICapitalPool {
         
         // capital pool will receive the associated aToken
         ILendingPool(lendingPoolAddress).deposit(underlierAddress, pool.raisedCapital, address(this), 0);
+
+        // borrow USDC from lending pool - use stable interest rate
+        pool.borrowedAmount += borrowAmount;
+        ILendingPool(lendingPoolAddress).borrow(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, borrowAmount, 1, 0, address(this));
+
+        // send the borrowed USDC to the borrower
+        IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48).transfer(pool.borrower, borrowAmount);
     }
+
+    /// @dev borrower first have to approve capital pool on their USDC
+    function repayLoan(uint256 creditLineID, address borrower, uint256 amount) external {
+        CreditLine storage pool = creditLines[creditLineID]; 
+
+        // get lending pool address (Ethereum mainnet)
+        address lendingPoolAddress = LendingPoolAddressesProvider(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5).getLendingPool();
+
+        // reduce borrowed amount
+        IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48).transferFrom(borrower, address(this), amount);
+        pool.repaidAmountToAave += amount;
+        // TODO: if borrow amount has been repaid, the USDC will just lie in the capital pool
+        ILendingPool(lendingPoolAddress).repay(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, amount, 1, address(this));
+    } 
 }
