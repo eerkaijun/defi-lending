@@ -11,6 +11,10 @@ import {
     QuorumNotAchieved
 } from "./interfaces/Errors.sol";
 
+// Aave integration import
+import { ILendingPool } from "./aave/ILendingPool.sol";
+import { LendingPoolAddressesProvider } from "./aave/LendingPoolAddressesProvider.sol";
+
 contract CapitalPool is ICapitalPool {
 
     uint256 currentCreditLineID = 1;
@@ -104,5 +108,15 @@ contract CapitalPool is ICapitalPool {
 
     function triggerLoan(uint256 creditLineID) external aboveQuorum(creditLineID) {
         // TODO: integration with lending protocol such as Aave and Compound
+        CreditLine memory pool = creditLines[creditLineID]; 
+
+        // get lending pool address (Ethereum mainnet)
+        address lendingPoolAddress = LendingPoolAddressesProvider(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5).getLendingPool();
+
+        // approve the lending pool to transfer the underlying asset
+        IERC20Metadata(underlierAddress).approve(lendingPoolAddress, pool.raisedCapital);
+        
+        // capital pool will receive the associated aToken
+        ILendingPool(lendingPoolAddress).deposit(underlierAddress, pool.raisedCapital, address(this), 0);
     }
 }
