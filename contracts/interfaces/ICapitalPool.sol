@@ -36,4 +36,12 @@ interface ICapitalPool {
      * @param amount amount to be borrowed in Aave (in USDC)
      */
     function triggerLoan(uint256 creditLineID, uint256 amount) external;
+
+    /**
+     * @notice function called by the borrower to repay its loan
+     * @param creditLineID id of the opened credit line
+     * @param borrower the address of the borrower
+     * @param amount amount to be repaid (in USDC)
+     */
+    function repayLoan(uint256 creditLineID, address borrower, uint256 amount) external;
 }
