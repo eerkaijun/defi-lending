@@ -18,16 +18,16 @@ import { LendingPoolAddressesProvider } from "./aave/LendingPoolAddressesProvide
 contract CapitalPool is ICapitalPool {
 
     uint256 currentCreditLineID = 1;
-    address underlierAddress;
+    address public underlierAddress;
 
-    mapping(uint256 => CreditLine) creditLines;
+    mapping(uint256 => CreditLine) public creditLines;
     mapping(address => uint256) depositedAmount; // deposited amount by lenders in native token
 
     struct CreditLine {
         address borrower;
         uint256 quorum; // quorum for native tokens in order for deal to go through
-        uint256 quorumPeriod;
-        uint256 lockupPeriod; // loan period
+        uint256 quorumPeriod; // unix timestamp of when quorum has to be achieved
+        uint256 lockupPeriod; // unix timestamp of when loan period ends
         uint256 repayAmount; // amount to be repaid by borrower to capital pool (inclusive of interest)
         uint256 raisedCapital; // amount of native tokens raised
         uint256 borrowedAmount; // borrowed amount in USDC
@@ -81,13 +81,12 @@ contract CapitalPool is ICapitalPool {
     }
 
     function openCreditLine(
-        address borrower, 
         uint256 quorum, 
         uint256 quorumPeriod, 
         uint256 lockupPeriod,
         uint256 repayAmount
     ) external {
-        creditLines[currentCreditLineID] = CreditLine(borrower, quorum, quorumPeriod, lockupPeriod, repayAmount, 0, 0, 0);
+        creditLines[currentCreditLineID] = CreditLine(msg.sender, quorum, quorumPeriod, lockupPeriod, repayAmount, 0, 0, 0);
         currentCreditLineID ++;
     }
 
@@ -153,6 +152,9 @@ contract CapitalPool is ICapitalPool {
         // reduce borrowed amount
         IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48).transferFrom(borrower, address(this), amount);
         pool.repaidAmountToAave += amount;
+        // allow lending pool to burn USDC debt token
+        // TODO: can we just transfer directly from borrower
+        IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48).approve(lendingPoolAddress, amount);
         // TODO: if borrow amount has been repaid, the USDC will just lie in the capital pool
         ILendingPool(lendingPoolAddress).repay(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, amount, 1, address(this));
     } 
