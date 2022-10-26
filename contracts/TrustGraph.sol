@@ -9,7 +9,9 @@ contract TrustGraph is ERC721URIStorage {
     uint256 public currentTokenID = 1;
     mapping(address => bool) public graphNodes;
 
-    constructor() ERC721("Trust Graph", "<->") {} 
+    constructor() ERC721("Trust Graph", "<->") {
+        graphNodes[msg.sender] = true;
+    } 
 
     function joinGraph(bytes memory signature) external {
         if (graphNodes[msg.sender]) {
@@ -20,13 +22,14 @@ contract TrustGraph is ERC721URIStorage {
         // referral link is in the form of signature
         bytes32 hashedMessage = keccak256(abi.encodePacked(
             "\x19Ethereum Signed Message:\n32",
-            msg.sender
+            keccak256(abi.encodePacked(msg.sender))
         ));
         address referrer = getAddressFromSignature(hashedMessage, signature);
         if (!graphNodes[referrer]) {
             revert InvalidReferrer();
         }
 
+        graphNodes[msg.sender] = true;
         _mint(msg.sender, currentTokenID);
         currentTokenID ++;
 
