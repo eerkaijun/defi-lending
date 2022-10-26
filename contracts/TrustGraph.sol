@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import { AlreadyJoinedGraph, InvalidReferrer } from "./interfaces/Errors.sol";
+import { AlreadyJoinedGraph, NotInGraph, InvalidReferrer } from "./interfaces/Errors.sol";
 
 contract TrustGraph is ERC721URIStorage {
 
@@ -34,6 +34,14 @@ contract TrustGraph is ERC721URIStorage {
         currentTokenID ++;
 
         emit newEdge(msg.sender, referrer);
+    }
+
+    function formEdge(address destination) external {
+        if (!graphNodes[msg.sender]) {
+            revert NotInGraph(msg.sender);
+        }
+
+        emit newEdge(msg.sender, destination);
     }
 
     function getAddressFromSignature(bytes32 hashedMessage, bytes memory signature) private pure returns(address) {

@@ -12,4 +12,5 @@ error QuorumNotAchieved(uint256 raisedCapital, uint256 quorum);
 
 // Trust graph
 error AlreadyJoinedGraph(address user);
+error NotInGraph(address user);
 error InvalidReferrer();
