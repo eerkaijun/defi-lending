@@ -27,3 +27,5 @@ The entire flow will be handled by our platform, through smart contracts.
 We believe creating a network of trustworthy borrowers is essential in attracting liquidity in DeFi. When a new investor lends to a new borrower and repayment is done successfully, both the investor and the borrower receives a dynamic NFT to represent the established trust connection. The investor is able to invite other investors to the ecosystem, where each of them will be issued a dynamic NFT too to represent the connection with the referrer. Similarly, the borrower is able to invite other borrowers too. Eventually, the trust graph will be incrementally built out where investors could see their degree of separations from a borrower. 
 
 ![trust graph](assets/trust-graph.png)
+
+We are currently mapping out the incentives for investors and borrowers to invite other users on our platform. In the longer term, our vision is to leverage lending activities to unlock a rich ecosystem of trust between investors and borrowers. 
