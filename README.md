@@ -28,4 +28,4 @@ We believe creating a network of trustworthy borrowers is essential in attractin
 
 ![trust graph](assets/trust-graph.png)
 
-We are currently mapping out the incentives for investors and borrowers to invite other users on our platform. In the longer term, our vision is to leverage lending activities to unlock a rich ecosystem of trust between investors and borrowers. 
+We are currently mapping out the incentives for investors and borrowers to invite other users on our platform. In the longer term, our vision is to leverage lending activities to unlock a rich ecosystem of trust between investors and borrowers. The graph is stored in Filecoin.
