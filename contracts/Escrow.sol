@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import { NotAdmin } from "./interfaces/Errors.sol";
+import { NotAdmin, WithdrawalClosed } from "./interfaces/Errors.sol";
 
 contract Escrow {
 
@@ -16,6 +16,14 @@ contract Escrow {
         _;
     }
 
+    modifier withdrawalOpen() {
+        if (!allowWithdrawal) {
+            // need to wait for admin to open withdrawal period
+            revert WithdrawalClosed();
+        }
+        _;
+    }
+
     constructor() {
         admin = msg.sender;
     }
@@ -24,8 +32,10 @@ contract Escrow {
         deposits[msg.sender] += msg.value;
     }
 
-    function withdraw() external {
-        payable(msg.sender).transfer(deposits[msg.sender]);
+    function withdraw() external withdrawalOpen {
+        uint256 withdrawAmount = deposits[msg.sender];
+        deposits[msg.sender] = 0;
+        payable(msg.sender).transfer(withdrawAmount);
     }
 
     function allowWithdraw() external onlyAdmin {

@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 // Lending protocol
 error NotAdmin(address sender, address admin);
+error WithdrawalClosed();
 error NotCapitalPool();
 error LockupPeriodNotOver(uint256 lockupPeriod);
 error QuorumPeriodOver(uint256 quorumPeriod);
