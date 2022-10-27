@@ -31,7 +31,7 @@ describe("Capital Pool", () => {
         expect(creditLine.borrower).equal(borrower.address);
     });
 
-    it("Investor should be able to lend capital", async() => {
+    it("Investor should be able lend capital", async() => {
         const underlierDecimals = await underlier.decimals();
         const lendAmount = ethers.utils.parseUnits("100", underlierDecimals);
 

@@ -20,7 +20,7 @@ contract Escrow {
         admin = msg.sender;
     }
 
-    function lend() external payable {
+    function stake() external payable {
         deposits[msg.sender] += msg.value;
     }
 

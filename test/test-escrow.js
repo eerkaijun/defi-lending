@@ -10,7 +10,7 @@ describe("Escrow", () => {
         const escrow = await Escrow.deploy();
 
         const depositAmount = ethers.utils.parseEther("0.5");
-        escrow.connect(user).lend({value: depositAmount});
+        escrow.connect(user).stake({value: depositAmount});
 
         expect(await escrow.deposits(user.address)).equal(depositAmount);
     });
