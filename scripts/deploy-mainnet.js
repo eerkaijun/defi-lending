@@ -12,9 +12,13 @@ async function main() {
 
   await escrow.deployed();
 
-  console.log(
-    `Contract deployed to ${escrow.address}`
-  );
+  const TrustGraph = await hre.ethers.getContractFactory("TrustGraph");
+  const trustGraph = await TrustGraph.deploy();
+
+  await trustGraph.deployed();
+
+  console.log(`Escrow contract deployed to ${escrow.address}`);
+  console.log(`TrustGraph contract deployed to ${trustGraph.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
