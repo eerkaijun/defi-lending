@@ -122,6 +122,8 @@ contract CapitalPool is ICapitalPool {
         IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48).transfer(msg.sender, userProfit);
     }
 
+    // TODO: integrate with Chainlink to get price feed and determine collateral factor
+    // TODO: alternatively could also use Uniswap TWAP
     function triggerLoan(uint256 creditLineID, uint256 borrowAmount) external aboveQuorum(creditLineID) {
         CreditLine storage pool = creditLines[creditLineID]; 
 
