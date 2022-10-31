@@ -1,0 +1,32 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TrustGraph
+    network: goerli
+    source:
+      address: "0x569e71c8d688e61BbaDaA5c24372EBcD404d28FF"
+      abi: TrustGraph
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - Transfer
+        - newEdge
+      abis:
+        - name: TrustGraph
+          file: ./abis/TrustGraph.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: newEdge(address,address)
+          handler: handlenewEdge
+      file: ./src/trust-graph.ts
