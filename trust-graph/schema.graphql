@@ -1,6 +1,5 @@
-type ExampleEntity @entity {
+type GraphEdge @entity {
   id: ID!
-  count: BigInt!
-  owner: Bytes! # address
-  approved: Bytes! # address
+  source: Bytes! # address
+  destination: Bytes! # address
 }
