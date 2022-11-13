@@ -34,3 +34,4 @@ We are currently mapping out the incentives for investors and borrowers to invit
 
 1. [Aave](https://aave.com/) - Take out overcollaterized loans in Aave when native tokens are deposited in the capital pool, use of aTokens to track the debt position in real time
 2. [Filecoin](https://filecoin.io/) - Storage for trust graph which acts as the reference points for lenders to determine trustworthiness of borrowers
+3. [Polygon](https://polygon.technology/) - Blockchain to deploy dynamic NFT for building out the trust ecosystem
